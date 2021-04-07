@@ -7,8 +7,13 @@ import {
 import { ProductImage } from './schemas/ProductImage';
 import { Product } from './schemas/Product';
 import { User } from './schemas/User';
+import { CartItem } from './schemas/CartItem';
 import 'dotenv/config';
 import { insertSeedData } from './seed-data';
+import { Order } from './schemas/Order';
+import { Role } from './schemas/Role';
+import { OrderItem } from './schemas/OrderItem';
+import cors from 'cors';
 
 const databaseURL =
   process.env.DATABASE_URL || 'mongodb://localhost/keystone-sick-fits-tutorial';
@@ -51,6 +56,10 @@ export default withAuth(
     lists: createSchema({
       // Schema items go in here
       User,
+      Role,
+      Order,
+      OrderItem,
+      CartItem,
       Product,
       ProductImage,
     }),
