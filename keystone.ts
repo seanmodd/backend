@@ -4,6 +4,7 @@ import {
   withItemData,
   statelessSessions,
 } from '@keystone-next/keystone/session';
+import cors from 'cors';
 import { ProductImage } from './schemas/ProductImage';
 import { Product } from './schemas/Product';
 import { User } from './schemas/User';
@@ -13,7 +14,7 @@ import { insertSeedData } from './seed-data';
 import { Order } from './schemas/Order';
 import { Role } from './schemas/Role';
 import { OrderItem } from './schemas/OrderItem';
-import cors from 'cors';
+import { extendGraphqlSchema } from './mutations/index';
 
 const databaseURL =
   process.env.DATABASE_URL || 'mongodb://localhost/keystone-sick-fits-tutorial';
@@ -63,6 +64,7 @@ export default withAuth(
       Product,
       ProductImage,
     }),
+    extendGraphqlSchema,
     ui: {
       // Show the UI only for poeple who pass this test
       isAccessAllowed: ({ session }) =>
