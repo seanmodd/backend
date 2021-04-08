@@ -4,17 +4,20 @@ import {
   withItemData,
   statelessSessions,
 } from '@keystone-next/keystone/session';
-import cors from 'cors';
+import { permissionsList } from './schemas/fields';
+import { Role } from './schemas/Role';
+import { OrderItem } from './schemas/OrderItem';
+import { Order } from './schemas/Order';
+import { CartItem } from './schemas/CartItem';
 import { ProductImage } from './schemas/ProductImage';
 import { Product } from './schemas/Product';
 import { User } from './schemas/User';
-import { CartItem } from './schemas/CartItem';
 import 'dotenv/config';
 import { insertSeedData } from './seed-data';
-import { Order } from './schemas/Order';
-import { Role } from './schemas/Role';
-import { OrderItem } from './schemas/OrderItem';
-import { extendGraphqlSchema } from './mutations/index';
+import { sendPasswordResetEmail } from './lib/mail';
+import { extendGraphqlSchema } from './mutations';
+
+function check(name: string) { }
 
 const databaseURL =
   process.env.DATABASE_URL || 'mongodb://localhost/keystone-sick-fits-tutorial';
@@ -32,6 +35,12 @@ const { withAuth } = createAuth({
     fields: ['name', 'email', 'password'],
     // TODO: Add in inital roles here
   },
+  passwordResetLink: {
+    async sendToken(args) {
+      // send the email
+      await sendPasswordResetEmail(args.token, args.identity);
+    },
+  },
 });
 
 export default withAuth(
@@ -47,22 +56,21 @@ export default withAuth(
       adapter: 'mongoose',
       url: databaseURL,
       async onConnect(keystone) {
-        console.log('connected to the database!');
+        console.log('Connected to the database!');
         if (process.argv.includes('--seed-data')) {
           await insertSeedData(keystone);
         }
       },
-      // TODO: Add data seeding here
     },
     lists: createSchema({
       // Schema items go in here
       User,
-      Role,
-      Order,
-      OrderItem,
-      CartItem,
       Product,
       ProductImage,
+      CartItem,
+      OrderItem,
+      Order,
+      Role,
     }),
     extendGraphqlSchema,
     ui: {
@@ -73,7 +81,7 @@ export default withAuth(
     },
     session: withItemData(statelessSessions(sessionConfig), {
       // GraphQL Query
-      User: 'id name email',
+      User: `id name email role { ${permissionsList.join(' ')} }`,
     }),
   })
 );
